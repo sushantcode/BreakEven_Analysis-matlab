@@ -1,0 +1,184 @@
+% Sushant Gupta           
+% Taydriel Tucker            
+% Zaky Qalawi 
+%*************************************************************************
+% Problem Statement
+% To create a breakeven analysis program for a local zoo to build a new
+% closure for the newly breeded elephants. The program should perform
+% breakeven analysis on the different materials and construction methods
+% for the closure, and determine the expected return on the investment from
+% public visit to see those elephants. 
+% This program will print two graphs, one with revenue and cost vs time
+% graph and another with profit vs time graph, both with breakeven point.
+% Besides, it will print revenue and cost for a year, breakeven months and
+% total profit for user specified number of years.
+%*************************************************************************
+% Variables
+% material - name of materials to build the closure area
+% Concrete - concrete material
+% Wood - wood material
+% Adobe - adobe matrial
+% seelction - cell position of materials
+% choice - material menu selection tab
+% thickness - thickness of wall [in]
+% tsa - total surface area of the wall
+% wall_cost - total cost to build wall only
+% material_cost - cost of the material [$/ft^3]
+% misc_materials - cost of miscellaneous construction materials [$]
+% construct_labor_cost - cost of labor per person per week [$/(person week)]
+% construct_num_person - number of laborers (people)
+% construct_num_weeks - number of weeks of construction
+% total_labor_cost - total labor cost to build the enclosure [$]
+% energy_cost - cost of energy used [$/week]
+% labor_cost - cost of labor to operate and maintain the place [$/week)
+% maintain_cost - Maintenance cost [$/week]
+% land_cost - cost of landfill [$/week]
+% num_weeks - number of weeks per year the zoo will operate
+% num_years - Number of years the analysis should include
+% total_labor_cost - total labor cost to construct the 
+% admin_price - Price of admission per person [$/person]
+% visitor - Number of people per week that will visit the zoo
+% donation - Expected donations per week [$/week]
+% fixed_cost - total fixed costs to construct the enclosure [$]
+% var_cost - total variable cost to operate the enclosure per week [$/week]
+% cost_a_year - total cost in a year [$]
+% total_cost - the total cost to operate the selected construction option for the number of years requested by the user [$]
+% revenue_a_year - total revenue generated in a year [$]
+% total_revenue - total revenue for the number of years requested by the user [$]
+% total_profit - the total profit for the number of years requested by the user [$]
+% fixedBE - given breakeven time to calculate one time donation [month]
+% fixed_donation - total one time donation with given breakeven time [$]
+%*************************************************************************
+% Conversions
+% 12 in = 1 ft
+% 12 months = 1 year
+
+%*************************************************************************
+% House Keeping
+%
+clc  % this command clears and cleans the command window
+clear  % this command cleans and clears the workspace
+close all  % this command closes all figures that may be open
+%
+%*************************************************************************
+% Start program
+%*************************************************************************
+% Input
+material = {'Concrete', 16, 30, 96000, 900, 5, 5; 'Wood', 23, 53, 115000, 800, 12, 11; 'Adobe', 18, 42, 68000, 600, 6, 5}; %creating cell-array to store data of each material types
+tsa = 3000; %total surface area in sqft [ft^2]
+fixedBE = 7; %[month]
+
+% Setting menu to allow user to select the construction option
+selection = {material{1,1}, material{2,1}, material{3,1}}; 
+choice = menu('Choose material type:', selection);
+
+% assigning value to each construction variables accoring to user selected construction option
+thickness = material{choice,2};
+material_cost = material{choice,3};
+misc_material = material{choice,4};
+construct_labor_cost = material{choice,5};
+construct_num_person= material{choice,6};
+construct_num_weeks= material{choice,7};
+
+% conversion
+thickness =(thickness / 12 ); % converting thickness in ft
+fixedBE = fixedBE/12; %converting month into year [year]
+
+% Calculating the total cost of construction
+wall_cost = (tsa * thickness) * material_cost; % volume in ft^3 times material cost per ft^3
+total_labor_cost = construct_labor_cost * construct_num_person * construct_num_weeks; %calculating total labor cost
+fixed_cost = wall_cost + misc_material + total_labor_cost; %calculating total fixed cost to construction the wall
+
+% asking the user to enter the various cost to operate the enclosure
+energy_cost= input('Please enter the energy cost per week: $');
+labor_cost = input('Please enter the labor cost per week: $');
+maintain_cost= input('Please enter the maintinance cost per week: $');
+land_cost= input('Please enter the landfill cost per week: $');
+num_weeks= input('Please enter the number of weeks that the zoo will operate per year: ');
+num_years = input('Please enter the number of years that will be analyzed: ');
+admin_price= input('Please enter the admission cost per person: $');
+visitor = input('Please enter the number of visitors per week: ');
+donation=input('Please enter the expected donations per week in dollars: $');
+
+% calculation of revenue, breakeven and profit
+var_cost = (energy_cost + labor_cost + maintain_cost + land_cost) * num_weeks; %calculating variable cost in a year
+cost_a_year = fixed_cost + (var_cost); %calculating total cost in a year
+total_cost = fixed_cost + (var_cost * num_years); %calculating total cost for user specified number of years
+revenue_a_year = ((visitor * admin_price) + donation) * num_weeks; %calculating revenue generated in a year
+total_revenue = revenue_a_year * num_years; %calculating total revenue for user specified no. of years
+total_profit = total_revenue - total_cost; %calculating total profit for user specified number of year
+be = fixed_cost /(revenue_a_year - var_cost);%calculating breakeven time in years.
+be_month = be * 12; %converting year into months
+
+% Calculation of the donation when it breakeven in 7 months
+fixed_donation = fixed_cost + (var_cost - (visitor * admin_price * num_weeks) ) * fixedBE;
+
+%plotting graphs
+plottimeX =[0 num_years]; %defining x-axis from 0 to user given number of years [year]
+plotcostY= [fixed_cost total_cost]; %definig y-axis from fixed cost to total cost [$]
+plotrevY = [0 total_revenue]; %defining y-axis from 0 to total revenue [$]
+figure('color', 'w'); %defining graph background color
+plot(plottimeX , plotrevY, '-b', 'LineWidth', 1.5); %ploting revenue graph
+hold on; %keeping graph active to add data
+plot(plottimeX, plotcostY, '-r', 'LineWidth', 1.5); %ploting cost graph
+hold on; %keeping graph active to add data
+plotBeY = be * revenue_a_year; %calculating y-coordinate for breakeven point [$]
+plot(be, plotBeY, 'og', 'markerfacecolor', 'k', 'MarkerSize', 8); %ploting breakeven point
+
+%turning on the major and minor grids
+grid on;
+grid minor;
+
+%giving labels to x-axis and y-axis of graph1
+xlabel('Number of years');
+ylabel('Revenue and Total Cost [$]');
+
+%title of the graph1
+title('Total Cost and Revenue with respect to time');
+
+%Adding text in the graph1 to show breakeven point
+txt1 = sprintf('     BE = %0.2f Months', be_month);
+text(be, plotBeY,txt1,'HorizontalAlignment','left')
+
+%setting legend for graph1
+legend('Revenue [$]','Total Cost [$]','Break-Even Point', 'Location', 'NorthWest'); 
+
+
+% starting second graph for profit vs time
+figure('color', 'w'); %setting grph background color
+timeX = 0:0.5:5;
+plotprofitY = ((revenue_a_year - var_cost) * timeX) - fixed_cost;
+plot(timeX, plotprofitY, '-r', 'LineWidth', 1.5); %ploting profit vs time graph
+hold on; %keeping graph active to add ore elements
+plot(be, 0, 'og', 'markerfacecolor', 'k', 'MarkerSize', 8); %ploting breakeven point
+
+%turning on the major and minor grids
+grid on;
+grid minor;
+
+%giving labels to x-axis and y-axis of graph2
+xlabel('Number of years');
+ylabel('Profit Amount [$]');
+
+%title of the graph2
+title('Total Profit with respect to time');
+
+%Adding text in the graph2 to show breakeven point
+txt2 = sprintf('     BE = %0.2f Months', be_month);
+text(be, 0, txt2,'HorizontalAlignment','left')
+
+%setting legend for graph2
+legend('Total Profit [$]', 'Break-Even Point', 'Location', 'NorthWest');
+
+%*************************************************************************
+% Output
+fprintf('\nMaterial: %s\n', material{choice, 1});
+fprintf('\tOperating %0.0f weeks per year will generate per year: \n', num_weeks);
+fprintf('\t\tRevenue:\t $%0.0f\n', revenue_a_year);
+fprintf('\t\tCost: \t\t $%0.0f\n', cost_a_year);
+fprintf('\tThe breakeven time is %0.2f months\n', be_month);
+fprintf('\tThe total profit %0.0f years is $%0.3e\n\n', num_years, total_profit);
+fprintf('It will take a one-time donation of $%0.2f to breakeven in seven months.\n', fixed_donation);
+%*************************************************************************
+% End Program
+%*************************************************************************
